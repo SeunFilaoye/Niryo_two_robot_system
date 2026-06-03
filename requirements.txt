@@ -1,0 +1,8 @@
+opencv-python
+numpy
+ultralytics
+pyniryo
+torch
+torchvision
+pillow
+pyyaml

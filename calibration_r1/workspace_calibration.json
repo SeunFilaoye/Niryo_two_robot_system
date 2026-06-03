@@ -1,0 +1,23 @@
+{
+    "robot_ip": "192.168.0.229",
+    "workspace_width_mm": 165.1,
+    "workspace_height_mm": 203.2,
+    "image_points": {
+        "top_left": [
+            149,
+            67
+        ],
+        "top_right": [
+            437,
+            55
+        ],
+        "bottom_right": [
+            455,
+            382
+        ],
+        "bottom_left": [
+            137,
+            405
+        ]
+    }
+}
