@@ -1,0 +1,539 @@
+Single Robot Vision-Guided Pick-and-Place System
+Project Bible / Technical Documentation
+1. Project Overview
+Objective
+
+The objective of this project is to create a vision-guided robotic pick-and-place system using:
+
+Niryo Robot
+Niryo Conveyor
+Niryo Vacuum Pump
+YOLO Object Detection
+Python
+OpenCV
+PyNiryo
+
+The robot must:
+
+Detect a chip on a moving conveyor
+Stop the conveyor
+Determine the chip location
+Convert image coordinates into robot coordinates
+Pick up the chip
+Transport the chip
+Drop the chip
+Return home
+Restart the conveyor
+
+The process then repeats continuously.
+
+2. Project History
+
+This project originated from the larger:
+
+Two-Robot Chip Handoff System
+
+Originally:
+
+Robot 1:
+Detect Chip
+↓
+Pick Chip
+↓
+Place on Transfer Conveyor
+
+Robot 2:
+
+Receive Chip
+↓
+Pick Chip
+↓
+Place Chip in Final Location
+
+The system utilized:
+
+Two Niryo robots
+Two conveyors
+YOLO object detection
+Workspace calibration
+TCP coordinate mapping
+
+The current project is a simplified version:
+
+One Robot
+One Conveyor
+One Camera
+One Pick-And-Place Cycle
+
+The architecture was intentionally designed so it can later scale back up to:
+
+2 Robots
+3 Robots
+4 Robots
+5 Robots
+
+using the same detection pipeline.
+
+3. System Architecture
+Camera
+   │
+   ▼
+YOLO Detection
+   │
+   ▼
+ROI Detection
+   │
+   ▼
+Stop Conveyor
+   │
+   ▼
+Wait 2.5 Seconds
+   │
+   ▼
+Re-Detect Object
+   │
+   ▼
+Pixel Coordinate
+   │
+   ▼
+Homography Mapping
+   │
+   ▼
+Robot X,Y Coordinate
+   │
+   ▼
+Vacuum Pickup
+   │
+   ▼
+Drop Location
+   │
+   ▼
+Home Position
+   │
+   ▼
+Restart Conveyor
+4. Hardware Used
+Robot
+
+Niryo Robot
+
+IP Address:
+
+192.168.0.199
+End Effector
+
+Vacuum Pump
+
+Functions Used:
+robot.grasp_with_tool()
+robot.release_with_tool()
+
+Camera
+
+Niryo Wrist Camera
+
+Accessed through:
+robot.get_img_compressed()
+
+Conveyor
+
+Niryo Conveyor
+
+Functions:
+robot.run_conveyor()
+robot.stop_conveyor()
+
+5. Software Stack
+Python
+
+Version:
+
+Python 3.12
+
+Libraries
+Computer Vision
+opencv-python
+numpy
+ultralytics
+
+Robot Control
+pyniryo
+
+Utilities
+json
+csv
+pathlib
+datetime
+time
+
+6. YOLO Model
+
+Model:
+
+best.pt
+
+Original classes:
+
+blue_circle
+blue_square
+
+green_circle
+green_square
+
+red_circle
+red_square
+
+The model was trained using:
+
+Roboflow
+Ultralytics YOLO
+
+The defect project was later abandoned.
+
+The final implementation uses only:
+
+Good Chips
+7. Coordinate Systems
+
+The system uses three coordinate systems.
+
+Camera Pixels
+
+Example:
+
+Pixel = (350, 275)
+Robot Workspace Coordinates
+
+Example:
+
+X = 0.215 m
+Y = -0.034 m
+Joint Coordinates
+
+Example:
+
+Joint1
+Joint2
+Joint3
+Joint4
+Joint5
+Joint6
+
+Used for:
+
+Home
+Midpoint
+Drop
+
+positions.
+
+8. Calibration Process
+
+Calibration was completed using:
+
+04_workspace_calibration.py
+Step 1
+
+Collect image points.
+
+Order:
+
+Top Left
+Top Right
+Bottom Right
+Bottom Left
+
+Recorded:
+
+(185,185)
+(556,177)
+(562,411)
+(186,431)
+Step 2
+
+Collect physical robot points.
+
+Recorded:
+
+Top Left
+X=0.2743
+Y=0.0572
+
+Top Right
+X=0.2692
+Y=-0.2003
+
+Bottom Right
+X=0.1024
+Y=-0.1866
+
+Bottom Left
+X=0.1056
+Y=0.0600
+Step 3
+
+Record pickup heights.
+
+Hover Pose:
+
+X=0.1861
+Y=-0.0229
+Z=0.1104
+
+Contact Pose:
+
+X=0.1991
+Y=-0.0202
+Z=0.0753
+Output Files
+image_points.npy
+
+robot_points_xy.npy
+
+homography_matrix.npy
+
+pick_reference.json
+
+calibration_points.json
+9. Robot Positions
+Home
+(-0.060,
+0.293,
+-0.203,
+0.033,
+-1.886,
+-1.751)
+Midpoint
+
+Safe travel location.
+
+(1.3005,
+-0.0217,
+-0.3825,
+-0.052,
+-1.2104,
+-1.744)
+Drop
+(2.286,
+-0.426,
+-0.559,
+0.099,
+-0.489,
+-1.655)
+10. ROI
+
+ROI was implemented to prevent false pickups.
+
+Color:
+
+Bright Blue
+
+Purpose:
+
+Only chips inside ROI may be picked.
+
+This eliminates accidental detections outside the conveyor work area.
+
+11. Conveyor Logic
+
+The final conveyor logic:
+
+Conveyor Running
+       ↓
+Chip enters ROI
+       ↓
+Stop Conveyor
+       ↓
+Wait 2.5 Seconds
+       ↓
+Re-Detect Chip
+       ↓
+Pick Chip
+       ↓
+Drop Chip
+       ↓
+Return Home
+       ↓
+Restart Conveyor
+12. Scripts
+01_test_robot_connection.py
+
+Purpose:
+
+Verify robot connection.
+
+Tests:
+
+IP address
+TCP communication
+PyNiryo connection
+02_test_camera_stream.py
+
+Purpose:
+
+Verify wrist camera.
+
+Tests:
+
+Camera stream
+Image decoding
+Frame display
+03_test_yolo_detection.py
+
+Purpose:
+
+Verify YOLO model.
+
+Displays:
+
+Bounding boxes
+Class labels
+Confidence
+Pixel centers
+ROI
+04_workspace_calibration.py
+
+Purpose:
+
+Create camera-to-robot mapping.
+
+Outputs:
+
+Homography matrix
+Calibration files
+Pickup references
+05_test_pixel_to_robot.py
+
+Purpose:
+
+Validate calibration.
+
+Tests:
+
+Pixel
+↓
+Robot X,Y
+
+conversion.
+
+06_manual_pick_test.py
+
+Purpose:
+
+Verify robot pickup.
+
+No YOLO.
+
+No camera.
+
+Only robot motion.
+
+Sequence:
+
+Home
+↓
+Hover
+↓
+Contact
+↓
+Vacuum On
+↓
+Lift
+↓
+Midpoint
+↓
+Drop
+↓
+Vacuum Off
+↓
+Home
+07_run_pick_place.py
+
+Purpose:
+
+Final autonomous system.
+
+Combines:
+
+Camera
+YOLO
+Calibration
+Conveyor
+Vacuum
+Robot Motion
+
+into one continuous process.
+
+13. Current Status
+
+Successfully Completed:
+
+✓ Robot Connection
+
+✓ Camera Stream
+
+✓ YOLO Detection
+
+✓ Workspace Calibration
+
+✓ Pixel-To-Robot Mapping
+
+✓ Manual Pick Test
+
+✓ Full Vision-Guided Pick-And-Place
+14. Future Expansion
+
+The architecture was intentionally designed to scale.
+
+Future system:
+
+Robot 1
+Robot 2
+Robot 3
+Robot 4
+Robot 5
+
+Potential architecture:
+
+Conveyor
+   ↓
+
+Robot 1
+   ↓
+
+Robot 2
+   ↓
+
+Robot 3
+   ↓
+
+Robot 4
+   ↓
+
+Robot 5
+
+Each robot:
+
+Own Camera
+Own Calibration
+Own ROI
+Own Workspace
+
+Shared:
+
+YOLO Model
+Control Logic
+Detection Framework
+15. Final Result
+
+A fully functioning vision-guided robotic workcell capable of:
+
+Detecting chips
+Stopping conveyor
+Localizing objects
+Converting image coordinates to robot coordinates
+Picking objects
+Transporting objects
+Dropping objects
+Restarting production flow
+
