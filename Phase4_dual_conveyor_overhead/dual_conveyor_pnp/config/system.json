@@ -1,0 +1,68 @@
+{
+    "schema_version": 1,
+    "description": "Dual-conveyor overhead-supervised dynamic pick-and-place for robot .150 (C1, C2)",
+    "models": {
+        "wrist": "../models/best.pt",
+        "overhead": "../models/best_chip_v13.pt",
+        "overhead_previous": "../models/best_chip_v13.pt"
+    },
+    "robots": {
+        "robot_150": {
+            "ip": "192.168.0.150",
+            "conveyors": [
+                "C1",
+                "C2"
+            ]
+        }
+    },
+    "conveyors": {
+        "C1": {
+            "tag_id": 0,
+            "robot": "robot_150"
+        },
+        "C2": {
+            "tag_id": 1,
+            "robot": "robot_150"
+        }
+    },
+    "overhead": {
+        "cameras": null,
+        "max_camera_index": 10,
+        "frame_width": 640,
+        "frame_height": 480,
+        "confidence": 0.75,
+        "startup_frames": 30,
+        "alert_stable_frames": 4,
+        "alert_rearm_empty_frames": 12,
+        "entry_stable_frames": 4,
+        "entry_rearm_empty_frames": 12,
+        "zone_state_period_sec": 0.5
+    },
+    "supervisor": {
+        "robot_offline_after_sec": 5.0,
+        "check_timeout_sec": 180.0,
+        "recheck_occupied_after_sec": 6.0
+    },
+    "robot_runtime": {
+        "wrist_confidence": 0.75,
+        "dwell_sec": 3.0,
+        "empty_timeout_sec": 3.0,
+        "max_picks_per_check": 10,
+        "view_settle_sec": 0.6,
+        "post_pick_delay_sec": 0.75,
+        "run_conveyors": true,
+        "conveyor_speed": 50,
+        "heartbeat_period_sec": 1.0,
+        "min_reach_m": 0.1,
+        "max_reach_m": 0.42
+    },
+    "bus": {
+        "host": "127.0.0.1",
+        "ports": {
+            "supervisor": 47100,
+            "overhead": 47101,
+            "monitor": 47199,
+            "robot_150": 47150
+        }
+    }
+}

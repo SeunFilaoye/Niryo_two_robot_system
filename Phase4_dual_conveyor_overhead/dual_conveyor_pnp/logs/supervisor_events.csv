@@ -1,0 +1,24 @@
+timestamp,event,details
+2026-10-15 22:14:30,SUPERVISOR_START,"robots=['robot_150'] conveyors=['C1', 'C2']"
+2026-10-15 22:14:41,ROBOT_STATE,robot=robot_150 state=STARTING conveyor=None
+2026-10-15 22:14:48,ROBOT_STATE,robot=robot_150 state=IDLE conveyor=None
+2026-10-15 22:15:06,ENTRY,conveyor=C2 cls=red_square id=P0001
+2026-10-15 22:15:16,QUEUED,robot=robot_150 conveyor=C1 reason=alert_zone_still_occupied alert=None
+2026-10-15 22:15:16,DISPATCH,robot=robot_150 conveyor=C1 request=R0001 reason=alert_zone_still_occupied
+2026-10-15 22:15:16,ROBOT_STATE,robot=robot_150 state=CHECKING conveyor=C1
+2026-10-15 22:15:17,ALERT,conveyor=C1 cls=green_square id=A0001
+2026-10-15 22:15:24,ALERT,conveyor=C2 cls=red_square id=A0002
+2026-10-15 22:15:24,QUEUED,robot=robot_150 conveyor=C2 reason=overhead_alert alert=A0002
+2026-10-15 22:15:40,CHECK_RESULT,robot=robot_150 conveyor=C1 result=COMPLETE picked=1
+2026-10-15 22:15:40,ROBOT_STATE,robot=robot_150 state=RETURNING conveyor=None
+2026-10-15 22:15:40,ROBOT_STATE,robot=robot_150 state=IDLE conveyor=None
+2026-10-15 22:15:40,DISPATCH,robot=robot_150 conveyor=C2 request=R0002 reason=overhead_alert
+2026-10-15 22:15:40,ROBOT_STATE,robot=robot_150 state=CHECKING conveyor=C2
+2026-10-15 22:15:42,ENTRY,conveyor=C1 cls=green_square id=P0002
+2026-10-15 22:15:58,QUEUED,robot=robot_150 conveyor=C1 reason=alert_zone_still_occupied alert=None
+2026-10-15 22:15:58,ALERT,conveyor=C1 cls=green_square id=A0003
+2026-10-15 22:16:13,CHECK_RESULT,robot=robot_150 conveyor=C2 result=COMPLETE picked=1
+2026-10-15 22:16:13,ROBOT_STATE,robot=robot_150 state=RETURNING conveyor=None
+2026-10-15 22:16:16,ROBOT_STATE,robot=robot_150 state=IDLE conveyor=None
+2026-10-15 22:16:16,DISPATCH,robot=robot_150 conveyor=C1 request=R0003 reason=alert_zone_still_occupied
+2026-10-15 22:16:16,ROBOT_STATE,robot=robot_150 state=CHECKING conveyor=C1

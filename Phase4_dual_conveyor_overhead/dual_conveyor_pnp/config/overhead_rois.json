@@ -1,0 +1,123 @@
+{
+    "schema_version": 1,
+    "source": "shared_roi_template copied from robo_confirm/config/apriltag_conveyor_rois.json on 2026-10-15",
+    "tag_family": "Tag36h11",
+    "tag_size_in": 3.0,
+    "shared_roi_template": {
+        "coordinate_frame": "apriltag_local",
+        "units": "inches",
+        "reference_tag_id": 2,
+        "reference_camera_index": 1,
+        "description": "Shared conveyor geometry drawn using a stationary AprilTag reference.",
+        "polygon_roi_local": [
+            [
+                7.873205033068591,
+                9.84116356564698
+            ],
+            [
+                -21.64589909905074,
+                9.837152478766047
+            ],
+            [
+                -21.65748073041582,
+                1.9671309883829171
+            ],
+            [
+                7.8760132284135205,
+                1.9680790804177255
+            ]
+        ],
+        "entry_roi_local": [
+            [
+                7.820075286048712,
+                9.785426932602654
+            ],
+            [
+                -1.9436528774082893,
+                9.8074008051607
+            ],
+            [
+                -1.9423070272455998,
+                2.0093595734745158
+            ],
+            [
+                7.817448399023237,
+                2.025417208558548
+            ]
+        ],
+        "calibration": {
+            "saved_at_utc": "20261015T202333_929028Z",
+            "locked_tag_corners_px": [
+                [
+                    666.34765625,
+                    230.388671875
+                ],
+                [
+                    635.63037109375,
+                    248.33016967773438
+                ],
+                [
+                    617.6439208984375,
+                    220.4015350341797
+                ],
+                [
+                    648.1724853515625,
+                    202.70114135742188
+                ]
+            ]
+        }
+    },
+    "alert_rois_local": {
+        "C1": [
+            [
+                -17.4749,
+                8.3575
+            ],
+            [
+                -18.3889,
+                3.92
+            ],
+            [
+                -14.3033,
+                3.9932
+            ],
+            [
+                -13.8086,
+                8.4635
+            ]
+        ],
+        "C2": [
+            [
+                -20.7399,
+                8.6634
+            ],
+            [
+                -20.9125,
+                3.3228
+            ],
+            [
+                -16.4527,
+                3.7365
+            ],
+            [
+                -16.4559,
+                8.7248
+            ]
+        ]
+    },
+    "notes": [
+        "All polygons are in AprilTag-local inches (tag corner 0 = origin).",
+        "polygon_roi_local = whole conveyor, entry_roi_local = entry zone (both shared by every tag).",
+        "alert_rois_local = per-conveyor zone that alerts the supervisor. Draw with 10_draw_alert_rois.py.",
+        "tag_quarter_turns = how each tag is mounted relative to tag 0 (0..3 x 90 deg). Set with O in 20_draw_alert_rois.py.",
+        "roi_mapping: homography (perspective) or similarity (no perspective, ROI keeps its shape far from the tag). Toggle with T in 20_draw_alert_rois.py."
+    ],
+    "tag_quarter_turns": {
+        "C1": 0,
+        "C2": 0
+    },
+    "roi_mapping": {
+        "C1": "homography",
+        "C2": "similarity"
+    }
+}

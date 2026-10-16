@@ -1,0 +1,2 @@
+timestamp,robot,conveyor,class,confidence,pixel_x,pixel_y,robot_x,robot_y,status
+2026-10-15 22:16:10,robot_150,C2,red_square,0.8982,285,391,0.2012,-0.1098,pick_complete

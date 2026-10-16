@@ -1,0 +1,47 @@
+{
+    "robot": "robot_150",
+    "conveyor": "C2",
+    "poses": {
+        "view": {
+            "joints": [
+                -0.5288,
+                0.1767,
+                -0.7946,
+                0.0277,
+                -0.9557,
+                -1.2117
+            ],
+            "tcp": null,
+            "source": "provided by user",
+            "taught_at": "2026-10-15T21:16:21",
+            "note": "used for clicking the 4 image points, TCP calibration, ROI and detection"
+        },
+        "midpoint": {
+            "joints": [
+                0.002,
+                0.596,
+                -1.008,
+                -0.02,
+                -0.994,
+                -1.15
+            ],
+            "tcp": null,
+            "source": "ROS2 robot_positions.yaml home_joints (safe point between C1, C2, C3, C5)",
+            "recorded_at": "2026-10-15T21:33:52"
+        },
+        "drop": {
+            "joints": [
+                1.5105,
+                -0.361,
+                -0.7506,
+                0.1151,
+                -0.675,
+                -0.253
+            ],
+            "tcp": null,
+            "source": "ROS2 robot_positions.yaml D15 - drop onto conveyor 5 (test routing; the ROS2 router decides in production)",
+            "recorded_at": "2026-10-15T21:37:48"
+        }
+    },
+    "updated_at": "2026-10-15T21:37:48"
+}

@@ -1,0 +1,144 @@
+{
+    "calibration_version": 1,
+    "created_at": "2026-10-15T21:21:18",
+    "description": "robot_150 C1 wrist-camera-to-conveyor workspace calibration",
+    "robot_name": "robot_150 C1",
+    "robot_ip": "192.168.0.150",
+    "robot_folder": "/home/ise/multi_robocv/dynamic_pnp/dual_conveyor_pnp/robots/robot_150/C1",
+    "calibration_directory": "/home/ise/multi_robocv/dynamic_pnp/dual_conveyor_pnp/robots/robot_150/C1/calibration",
+    "home_view_joints": [
+        -1.6626,
+        0.3267,
+        -0.7628,
+        -0.0428,
+        -1.2088,
+        -1.2117
+    ],
+    "camera_frame_width": 640,
+    "camera_frame_height": 480,
+    "calibration_order": [
+        "top-left",
+        "top-right",
+        "bottom-right",
+        "bottom-left"
+    ],
+    "image_points_pixels": [
+        [
+            139,
+            59
+        ],
+        [
+            457,
+            68
+        ],
+        [
+            465,
+            145
+        ],
+        [
+            133,
+            142
+        ]
+    ],
+    "robot_points_xy_meters": [
+        [
+            0.04067474807609121,
+            -0.369300533392952
+        ],
+        [
+            -0.11928134803358931,
+            -0.35804148238757527
+        ],
+        [
+            -0.1135921627643629,
+            -0.3081854237575834
+        ],
+        [
+            0.043809602887454675,
+            -0.3192004177055154
+        ]
+    ],
+    "robot_full_poses": [
+        {
+            "x": 0.04067474807609121,
+            "y": -0.369300533392952,
+            "z": 0.05468008851595828,
+            "roll": 2.3605582419253337,
+            "pitch": 1.4783726057954454,
+            "yaw": 2.1609992179702555
+        },
+        {
+            "x": -0.11928134803358931,
+            "y": -0.35804148238757527,
+            "z": 0.05504856142158002,
+            "roll": 2.57551684683093,
+            "pitch": 1.4878067984299188,
+            "yaw": 1.9571468131862415
+        },
+        {
+            "x": -0.1135921627643629,
+            "y": -0.3081854237575834,
+            "z": 0.05694858171900095,
+            "roll": 2.250606280719466,
+            "pitch": 1.3555147910169791,
+            "yaw": 1.6433403358215821
+        },
+        {
+            "x": 0.043809602887454675,
+            "y": -0.3192004177055154,
+            "z": 0.05667224367409912,
+            "roll": 1.8576456183196282,
+            "pitch": 1.3519968917710186,
+            "yaw": 1.6124465262084222
+        }
+    ],
+    "homography_matrix": [
+        [
+            -0.0004812459526861221,
+            3.697014255479442e-05,
+            0.10576377254464413
+        ],
+        [
+            0.00010766445980611128,
+            0.0003718941539008346,
+            -0.40963124635455045
+        ],
+        [
+            -0.00025151379852871215,
+            0.0007496759521951255,
+            1.0
+        ]
+    ],
+    "pick_reference": {
+        "robot_name": "robot_150 C1",
+        "robot_ip": "192.168.0.150",
+        "hover_pose": {
+            "x": -0.016657517454664567,
+            "y": -0.27088517360429754,
+            "z": 0.10420218284507841,
+            "roll": 1.7990182973186726,
+            "pitch": 1.506777884616837,
+            "yaw": 1.3239028906702204
+        },
+        "contact_pose": {
+            "x": -0.02227649363560861,
+            "y": -0.27033024802221717,
+            "z": 0.07146420866936143,
+            "roll": -0.7165264346111229,
+            "pitch": 1.5304963816473915,
+            "yaw": -1.2651935565462606
+        },
+        "hover_z": 0.10420218284507841,
+        "contact_z": 0.07146420866936143,
+        "roll": -0.7165264346111229,
+        "pitch": 1.5304963816473915,
+        "yaw": -1.2651935565462606
+    },
+    "notes": [
+        "Image points are wrist-camera pixel coordinates.",
+        "Robot points are physical X and Y coordinates in meters.",
+        "The homography maps detected image centers to robot pickup X and Y coordinates.",
+        "The camera must return to the saved home/view joint position before detection.",
+        "Hover and contact references provide the pickup Z height and tool orientation."
+    ]
+}
