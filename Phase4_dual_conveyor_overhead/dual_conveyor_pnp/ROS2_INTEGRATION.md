@@ -27,7 +27,7 @@ pyniryo. It was validated end to end on hardware on 2026-10-15:
 
 | Piece | File | Becomes in ROS2 |
 |---|---|---|
-| Overhead tag ROIs + chip alerts | `21_run_overhead_monitor.py`, `common/apriltag_rois.py`, `config/overhead_rois.json` | **New node** `overhead_alert_node.py` |
+| Overhead tag ROIs (all tags 0-7 / C1-C8) + chip alerts (C1, C2 only) | `21_run_overhead_monitor.py`, `common/apriltag_rois.py`, `config/overhead_rois.json` | **New node** `overhead_alert_node.py` |
 | Supervisor (alert → which conveyor to check) | `22_run_supervisor.py` | superfactory's existing pickup gate, fed by the overhead `CHIP_READY` event instead of IR (Phase 4) |
 | Robot worker (go to view, FIFO pick) | `23_run_robot_worker.py`, `common/station*.py` | Existing `robot_controller.py` + `niryo_factory_node.py`, extended for R1 (Phases 2–3) |
 | Wrist YOLO + homography | `vision/detector.py`, `core/picker.py` | Existing `cv_robot_node.py`, made station-aware for R1 (Phase 2) |
@@ -249,9 +249,10 @@ Port `dynamic_pnp/dual_conveyor_pnp/21_run_overhead_monitor.py` to rclpy:
 |---|---|---|
 | `/overhead/alert` | `std_msgs/String` | the same JSON as today: `event` `CHIP_IN_ALERT_ZONE`, `id`, `conveyor`, `tag_id`, `robot`, `class_name`, `confidence`, `camera_index`, `tag_position_in` |
 | `/overhead/entry` | `std_msgs/String` | `PART_ENTERED_CONVEYOR` (info only) |
-| `/overhead/zone_state` | `std_msgs/String` | `{"zones": {"C1": {"on_conveyor", "in_alert", "observable"}}}` at 2 Hz |
+| `/overhead/zone_state` | `std_msgs/String` | `{"zones": {"C1": {"on_conveyor", "in_alert", "observable"}, ..., "C8": {...}}}` at 2 Hz, all eight conveyors (`in_alert` stays 0 for C3-C8) |
 | `/overhead/pickup_ready` | `std_msgs/String` | on each alert: `"CHIP_READY \| R1 \| P11 \| C1"` (C1) or `"CHIP_READY \| R1 \| P12 \| C2"` (C2) |
 
+- The monitor watches all tags 0-7 (C1-C8) and reports positions / entries for every conveyor, but **only C1 and C2 raise alerts or `CHIP_READY`**: they are the only conveyors owned by one robot. In `config/system.json`, C3-C8 have `"robot": null`. Keep that rule in the node.
 - Conveyor → pickup key map: `{"C1": ("R1", "P11"), "C2": ("R1", "P12")}`. Put it in the node's config, not in code.
 - The `ZoneGate` re-arm (12 empty frames) already prevents duplicate `CHIP_READY` for one chip. Keep it.
 

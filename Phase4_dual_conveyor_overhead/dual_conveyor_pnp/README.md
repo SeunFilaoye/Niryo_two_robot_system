@@ -9,6 +9,15 @@ the overhead camera sees a chip in that conveyor's ALERT zone.
 |---|---|---|---|---|
 | `robot_150` | C1 | 0 | ID_1 | saved |
 | `robot_150` | C2 | 1 | ID_2 | saved |
+| none (watched only) | C3-C8 | 2-7 | - | - |
+
+The overhead cameras watch **all eight conveyors** (AprilTags 0-7 -> C1-C8)
+across both overhead cameras: every conveyor gets its conveyor ROI (green) and
+entry AOI (magenta), and chips are assigned to the conveyor they sit on.
+Only **C1 and C2** have an ALERT ROI (red), because they are the only
+conveyors owned by one robot (.150). A conveyor with `"robot": null` in
+`config/system.json` never raises an alert. To give another conveyor alerts
+later, set its `"robot"` and add it to that robot's `"conveyors"` list.
 
 ## Same training as the original robots
 
@@ -174,15 +183,18 @@ Once 18 works on every conveyor, training for that robot is done.
 ```bash
 python 21_run_overhead_monitor.py --no-detect-chips
 ```
-- It opens every overhead camera and looks only for tags **0** (C1) and **1** (C2).
+- It opens every overhead camera and looks for tags **0-7** (C1-C8).
 - After 30 frames each tag **locks**, and its conveyor ROI (green) and entry ROI (magenta) are drawn.
+- The camera with the largest view of a tag **owns** it (bright outline; other cameras draw it dim). Only the owner reports chips on that conveyor, so a chip seen by both cameras is counted once.
+- The top bar shows which tags each camera owns and any tag **not seen** by any camera. After 10 s the terminal prints a `Tag coverage:` line, e.g. `0->cam 0, ..., 5->cam 2`.
+- The bottom bar shows `C1/C2: alert/on-conveyor` counts (red) and chip counts for C3-C8.
 - Keep the cameras and conveyors still. **Window:** `Q` or Esc quits.
 
 ### 20_draw_alert_rois.py: draw the third ROI (ALERT) per conveyor
 ```bash
 python 20_draw_alert_rois.py
 ```
-1. **Window:** press `1` or `2` to pick a conveyor, and `N` to switch cameras until that tag shows **LOCKED**.
+1. **Window:** press `1`-`8` to pick a conveyor (ALERT ROIs can only be saved on `1` / `2`; `T` and `O` work on all eight), and `N` to switch cameras until that tag shows **LOCKED**.
    - If a conveyor's green ROI **gets wider (or narrower) the farther it is from the tag**, press `T` to switch that conveyor's ROI mapping: `homography` → `similarity` → `affine`. Similarity has no perspective term, so the ROI keeps its real shape at any distance; small tag-corner errors no longer blow up. It saves immediately (`roi_mapping` in `config/overhead_rois.json`). C2 starts on `similarity`; C1 stays on `homography`, which already looked right.
    - If a conveyor's green ROI points the wrong way (for example across the screen), its tag is mounted turned relative to tag 0. Press `O` until the green ROI lies on the conveyor. Each press turns it 90°, and the setting is saved right away (`tag_quarter_turns` in `config/overhead_rois.json`). Fix the orientation **before** drawing that conveyor's ALERT ROI.
 2. Left-click the corners of the ALERT zone (the area the robot can reach). `U` undoes, `C` clears.
@@ -192,7 +204,8 @@ python 20_draw_alert_rois.py
 ```bash
 python 21_run_overhead_monitor.py
 ```
-- When a chip stays in a conveyor's ALERT ROI for 4 frames, it prints `CHIP_IN_ALERT_ZONE` and sends it to the supervisor.
+- Chips on any of C1-C8 are counted and `PART_ENTERED_CONVEYOR` fires for every conveyor's entry AOI.
+- When a chip stays in C1's or C2's ALERT ROI for 4 frames, it prints `CHIP_IN_ALERT_ZONE` and sends it to the supervisor.
 - It re-arms after the zone has been empty for 12 frames.
 
 ### Full system: three terminals, same folder and venv
@@ -234,6 +247,7 @@ Models:
 - Overhead: `chip_training/models/best_chip_v13.pt`.
 
 ## Supervisor rules
+- Alerts and zone reports for conveyors without a robot (C3-C8) are ignored.
 - Each alert queues its conveyor once for the robot that owns it. Duplicates are ignored while that conveyor is queued or being checked.
 - Each robot runs one check at a time, oldest request first.
 - If the ALERT zone is still occupied 6 s after a check of that conveyor, it is queued again.

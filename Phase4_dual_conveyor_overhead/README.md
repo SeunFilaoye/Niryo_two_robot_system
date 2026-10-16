@@ -1,8 +1,10 @@
 # Phase 4 - Dual-conveyor dynamic pick-and-place with overhead webcam supervision
 
 One Niryo Ned2 (robot .150, `192.168.0.150`) serves two conveyors (C1, C2).
-Overhead USB webcams find AprilTags (Tag36h11, 3 in) on the conveyors, project
-conveyor / entry / ALERT regions from each tag, and run the YOLO chip model.
+Overhead USB webcams find AprilTags 0-7 (Tag36h11, 3 in) on all eight conveyors
+(C1-C8) across both cameras, project
+conveyor / entry regions from each tag, and run the YOLO chip model. Only C1
+and C2 (owned by robot .150) have an ALERT region.
 When a chip sits in a conveyor's ALERT region, the supervisor sends the robot
 to that conveyor; the robot's wrist camera finds the chip and picks it.
 

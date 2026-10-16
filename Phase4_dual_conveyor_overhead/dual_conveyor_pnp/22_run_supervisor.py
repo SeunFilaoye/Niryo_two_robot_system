@@ -76,7 +76,10 @@ def main():
     last_summary = 0.0
 
     def enqueue(conveyor: str, reason: str, alert_id=None):
-        slot = slots[conveyors[conveyor]["robot"]]
+        robot = conveyors[conveyor].get("robot")
+        if robot not in slots:
+            return  # watched-only conveyor (C3-C8): no robot to send
+        slot = slots[robot]
         if slot.queued(conveyor):
             return
         slot.pending.append({"conveyor": conveyor, "reason": reason, "alert_id": alert_id,

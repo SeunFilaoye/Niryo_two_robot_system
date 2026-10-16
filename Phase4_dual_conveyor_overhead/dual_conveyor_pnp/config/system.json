@@ -1,6 +1,6 @@
 {
     "schema_version": 1,
-    "description": "Dual-conveyor overhead-supervised dynamic pick-and-place for robot .150 (C1, C2)",
+    "description": "Overhead cameras watch conveyors C1-C8 (AprilTags 0-7); robot .150 picks on C1 and C2",
     "models": {
         "wrist": "../models/best.pt",
         "overhead": "../models/best_chip_v13.pt",
@@ -23,6 +23,30 @@
         "C2": {
             "tag_id": 1,
             "robot": "robot_150"
+        },
+        "C3": {
+            "tag_id": 2,
+            "robot": null
+        },
+        "C4": {
+            "tag_id": 3,
+            "robot": null
+        },
+        "C5": {
+            "tag_id": 4,
+            "robot": null
+        },
+        "C6": {
+            "tag_id": 5,
+            "robot": null
+        },
+        "C7": {
+            "tag_id": 6,
+            "robot": null
+        },
+        "C8": {
+            "tag_id": 7,
+            "robot": null
         }
     },
     "overhead": {

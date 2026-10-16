@@ -1,15 +1,17 @@
 """
 21_run_overhead_monitor.py
 
-Overhead AprilTag chip monitor for conveyors C1 and C2 (robot .150).
-Mirrors robo_confirm/test_all_apriltag_rois.py
---detect-chips, but only looks for tags 0 and 1 and adds the ALERT ROI.
+Overhead AprilTag chip monitor for all eight conveyors C1-C8 (tags 0-7),
+across every overhead camera. Mirrors robo_confirm/test_all_apriltag_rois.py
+--detect-chips and adds the ALERT ROI.
 
-Per conveyor tag:
-  conveyor ROI  chips on that conveyor (display + zone counts)
-  entry ROI     PART_ENTERED_CONVEYOR info events (as before)
+Per conveyor tag (config/system.json "conveyors"):
+  conveyor ROI  chips on that conveyor (display + zone counts)       all C1-C8
+  entry ROI     PART_ENTERED_CONVEYOR info events                    all C1-C8
   ALERT ROI     CHIP_IN_ALERT_ZONE -> sent to the supervisor, which sends the
-                conveyor's robot to its view pose to check and pick
+                conveyor's robot to its view pose to check and pick.
+                Only conveyors owned by one robot (C1, C2 -> robot .150) have
+                one; conveyors with "robot": null never raise alerts.
 
 The first 30 detections of each tag are averaged and locked for the session;
 the camera with the largest view of a tag owns it, and only the owner may
@@ -37,7 +39,9 @@ from common.apriltag_rois import (
     pixels_to_local, tag_local_corners,
 )
 from common.bus import TOPIC_ALERT, TOPIC_ENTRY, TOPIC_ZONES, Bus
-from common.config import LOGS_DIR, load_system, model_path
+from common.config import LOGS_DIR, alert_conveyors, load_system, model_path
+
+COVERAGE_REPORT_AFTER_SEC = 10.0
 
 EVENT_LOG = LOGS_DIR / "overhead_events.csv"
 
@@ -71,10 +75,11 @@ def main():
     conveyors = system["conveyors"]
     tag_to_conveyor = {c["tag_id"]: name for name, c in conveyors.items()}
     valid_tags = set(tag_to_conveyor)
+    alerting = alert_conveyors(system)
 
     rois = load_overhead_rois()
     local_corners = tag_local_corners(rois.tag_size_in)
-    for name in conveyors:
+    for name in alerting:
         if not rois.alerts.get(name):
             print(f"WARNING: {name} has no ALERT ROI yet (run 20_draw_alert_rois.py). "
                   "No alerts will be raised for it.")
@@ -91,7 +96,7 @@ def main():
     if not captures:
         raise SystemExit(f"No working overhead camera among {list(indices)}")
     cameras = sorted(captures)
-    print(f"Overhead cameras: {cameras} | tags {sorted(valid_tags)}")
+    print(f"Overhead cameras: {cameras} | tags {sorted(valid_tags)} | ALERT ROIs on {alerting}")
 
     bus = Bus("overhead", system)
     detector = make_detector()
@@ -99,11 +104,14 @@ def main():
     refs = {(cam, tag): SessionTagReference(cfg["startup_frames"])
             for cam in cameras for tag in valid_tags}
     alert_gates = {name: ZoneGate(cfg["alert_stable_frames"], cfg["alert_rearm_empty_frames"])
-                   for name in conveyors}
+                   for name in alerting}
     entry_gates = {name: ZoneGate(cfg["entry_stable_frames"], cfg["entry_rearm_empty_frames"])
                    for name in conveyors}
     counter = {"alert": 0, "entry": 0}
     last_zone_publish = 0.0
+    started = time.monotonic()
+    coverage_reported = False
+    known_owners: dict[int, int] = {}
     windows = {cam: f"OVERHEAD CAMERA {cam}" for cam in cameras}
     for name in windows.values():
         cv2.namedWindow(name, cv2.WINDOW_NORMAL)
@@ -145,6 +153,19 @@ def main():
                     if ref.ready:
                         locked[cam][tag] = ref.locked
             ownership.update(locked)
+            if ownership.owners != known_owners:
+                for tag in sorted(set(ownership.owners) - set(known_owners)):
+                    print(f"Tag {tag} ({tag_to_conveyor[tag]}) -> camera {ownership.owner(tag)}")
+                known_owners = dict(ownership.owners)
+            unseen = sorted(t for t in valid_tags if not any(refs[(c, t)].preview is not None for c in cameras))
+            if not coverage_reported and time.monotonic() - started >= COVERAGE_REPORT_AFTER_SEC:
+                coverage_reported = True
+                owned = {t: ownership.owner(t) for t in sorted(valid_tags)}
+                print("Tag coverage: " + ", ".join(f"{t}->{'cam ' + str(c) if c is not None else 'NONE'}"
+                                                    for t, c in owned.items()))
+                if unseen:
+                    print(f"WARNING: tags {unseen} not seen by any camera "
+                          f"({', '.join(tag_to_conveyor[t] for t in unseen)}). Chips there are not tracked.")
 
             alert_candidates = {name: [] for name in conveyors}
             entry_candidates = {name: [] for name in conveyors}
@@ -168,7 +189,7 @@ def main():
                                  scale(conveyor_color), 0.04 if is_owner else 0, 1, name)
                     draw_polygon(display, local_to_pixels(rois.entry, corners, local_corners, rois.mode(name)),
                                  scale(COLOR_ENTRY), 0.04 if is_owner else 0, 1)
-                    if rois.alerts.get(name):
+                    if name in alerting and rois.alerts.get(name):
                         draw_polygon(display, local_to_pixels(rois.alerts[name], corners, local_corners, rois.mode(name)),
                                      scale(COLOR_ALERT), 0.10 if is_owner else 0, 2, f"{name} ALERT")
 
@@ -195,7 +216,7 @@ def main():
                     name = tag_to_conveyor[tag]
                     det.update(tag_x=tx, tag_y=ty)
                     owner = ownership.owner(tag) == cam
-                    in_alert = inside_local(rois.alerts.get(name), tx, ty)
+                    in_alert = name in alerting and inside_local(rois.alerts.get(name), tx, ty)
                     color = COLOR_ALERT if in_alert else (0, 255, 0) if owner else (150, 150, 150)
                     cv2.rectangle(displays[cam], (x1, y1), (x2, y2), color, 2)
                     cv2.putText(displays[cam], det["class_name"], (x1, max(14, y1 - 5)),
@@ -214,11 +235,12 @@ def main():
                     tag = conveyors[name]["tag_id"]
                     owner = ownership.owner(tag)
                     observable = owner is not None and owner in frames and tag in locked.get(owner, {})
-                    fired, rearmed = alert_gates[name].update(alert_candidates[name], observable)
-                    if fired is not None:
-                        emit("alert", name, owner, fired)
-                    if rearmed:
-                        print(json.dumps({"event": "ALERT_REARMED", "conveyor": name}), flush=True)
+                    if name in alert_gates:
+                        fired, rearmed = alert_gates[name].update(alert_candidates[name], observable)
+                        if fired is not None:
+                            emit("alert", name, owner, fired)
+                        if rearmed:
+                            print(json.dumps({"event": "ALERT_REARMED", "conveyor": name}), flush=True)
                     fired, _ = entry_gates[name].update(entry_candidates[name], observable)
                     if fired is not None:
                         emit("entry", name, owner, fired)
@@ -229,12 +251,24 @@ def main():
                     bus.send("supervisor", TOPIC_ZONES, {"zones": zone_counts})
                     last_zone_publish = now
 
+            alert_text = "  ".join(
+                f"{n}: {zone_counts[n]['in_alert']} alert/{zone_counts[n]['on_conveyor']}"
+                for n in alerting)
+            other_text = "  ".join(f"{n}:{zone_counts[n]['on_conveyor']}"
+                                   for n in conveyors if n not in alerting)
             for cam, display in displays.items():
-                y = display.shape[0] - 10
-                text = "  ".join(
-                    f"{n}: {zone_counts[n]['in_alert']} alert/{zone_counts[n]['on_conveyor']}"
-                    for n in conveyors)
-                cv2.putText(display, text, (8, y), cv2.FONT_HERSHEY_SIMPLEX, 0.45,
+                owned = [t for t in sorted(valid_tags) if ownership.owner(t) == cam]
+                header = f"cam {cam} | owns tags {' '.join(map(str, owned)) or '-'}"
+                if unseen:
+                    header += f" | not seen: {' '.join(map(str, unseen))}"
+                cv2.rectangle(display, (0, 0), (display.shape[1], 20), (30, 30, 30), -1)
+                cv2.putText(display, header, (8, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.45,
+                            (0, 255, 255), 1, cv2.LINE_AA)
+                h = display.shape[0]
+                cv2.rectangle(display, (0, h - 40), (display.shape[1], h), (30, 30, 30), -1)
+                cv2.putText(display, alert_text, (8, h - 24), cv2.FONT_HERSHEY_SIMPLEX, 0.45,
+                            COLOR_ALERT, 1, cv2.LINE_AA)
+                cv2.putText(display, other_text, (8, h - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.42,
                             (255, 255, 255), 1, cv2.LINE_AA)
                 cv2.imshow(windows[cam], display)
 

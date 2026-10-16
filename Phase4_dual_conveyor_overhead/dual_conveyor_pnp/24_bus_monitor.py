@@ -30,6 +30,8 @@ def main():
 
     if args.fake_alert:
         conveyor = conveyor_key(args.fake_alert)
+        if not system["conveyors"][conveyor].get("robot"):
+            raise SystemExit(f"{conveyor} has no robot; only robot-owned conveyors get alerts.")
         sender = Bus("overhead", system)
         sender.send("supervisor", TOPIC_ALERT, {
             "event": "CHIP_IN_ALERT_ZONE", "id": "FAKE", "conveyor": conveyor,

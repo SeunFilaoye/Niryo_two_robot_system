@@ -82,6 +82,13 @@ def conveyor_key(value: str | int) -> str:
     return text
 
 
+def alert_conveyors(system: dict | None = None) -> list[str]:
+    """Conveyors owned by a robot. Only these get an ALERT ROI and alerts;
+    the others (robot null) are watched for position only."""
+    system = system or load_system()
+    return [name for name, c in system["conveyors"].items() if c.get("robot")]
+
+
 def robot_info(robot: str, system: dict | None = None) -> dict:
     system = system or load_system()
     return system["robots"][robot]
